@@ -145,10 +145,12 @@ defmodule Vermeer do
     :gl.loadIdentity()
     :gl.translatef(x*8, y*-8, -10.0)
     :gl.rotatef(state.count ,0.0, 0.0, 1.0)
-    :gl.'begin'(:gl_const.gl_triangles)
+    :gl.'begin'(:gl_const.gl_triangles_strip)
     :gl.vertex3f(0.0, 1.0, 0.0)
-    :gl.vertex3f(0.86602540378,-0.5, 0.0)
-    :gl.vertex3f(-0.86602540378,-0.5, 0.0)
+    :gl.vertex3f(-1,0, 0.0)
+    :gl.vertex3f(0.0, -1.0, 0.0)
+    :gl.vertex3f(1,0, 0.0)
+    :gl.vertex3f(0.0, 1.0, 0.0)
     :gl.'end'()
     :ok
   end

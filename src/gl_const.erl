@@ -27,6 +27,9 @@ gl_depth_buffer_bit() ->
 gl_triangles() ->
   ?GL_TRIANGLES.
 
+gl_triangles_strip() ->
+  ?GL_TRIANGLE_STRIP.
+
 gl_projection() ->
   ?GL_PROJECTION.
 
