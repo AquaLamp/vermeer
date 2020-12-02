@@ -30,6 +30,9 @@ gl_triangles() ->
 gl_triangles_strip() ->
   ?GL_TRIANGLE_STRIP.
 
+gl_polygon() ->
+  ?GL_POLYGON.
+
 gl_projection() ->
   ?GL_PROJECTION.
 

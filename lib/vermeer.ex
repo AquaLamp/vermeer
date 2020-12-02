@@ -40,8 +40,6 @@ defmodule Vermeer do
     # Periodically send a message to trigger a redraw of the scene
     timer = :timer.send_interval(1, self(), :update)
 
-
-
     {frame,
       %{canvas: canvas,
       timer: timer,
@@ -144,15 +142,33 @@ defmodule Vermeer do
     :gl.clear(Bitwise.bor(:gl_const.gl_color_buffer_bit, :gl_const.gl_depth_buffer_bit))
     :gl.loadIdentity()
     :gl.translatef(x*8, y*-8, -10.0)
-    :gl.rotatef(state.count ,0.0, 0.0, 1.0)
-    :gl.'begin'(:gl_const.gl_triangles_strip)
-    :gl.vertex3f(0.0, 1.0, 0.0)
-    :gl.vertex3f(-1,0, 0.0)
-    :gl.vertex3f(0.0, -1.0, 0.0)
-    :gl.vertex3f(1,0, 0.0)
-    :gl.vertex3f(0.0, 1.0, 0.0)
-    :gl.'end'()
+    #:gl.rotatef(state.count ,0.0, 0.0, 1.0)
+    circle(1.5,12,{0.3,0.3,1.0})
+#    quad(2,1,{1.0,0.3,0.3})
     :ok
+  end
+
+  defp circle(radius,resolution,{r,g,b}) do
+    deg_to_rad = :math.pi() / 180
+    :gl.'begin'(:gl_const.gl_polygon)
+    :gl.color3f(r, g, b)
+    Enum.map(0..(resolution + 1),
+      fn x -> :gl.vertex3f(
+                :math.cos((x * (360 / resolution ) * deg_to_rad)) * radius,
+                :math.sin((x * (360 / resolution ) * deg_to_rad)) * radius,
+                0.0)
+      end)
+    :gl.'end'()
+  end
+
+  defp quad(width,height,{r,g,b}) do
+    :gl.'begin'(:gl_const.gl_triangles_strip)
+    :gl.color3f(r, g, b)
+    :gl.vertex3f(-width, -height, 0.0)
+    :gl.vertex3f(width, -height, 0.0)
+    :gl.vertex3f(-width, height, 0.0)
+    :gl.vertex3f(width, height, 0.0)
+    :gl.'end'()
   end
 
   defp render(%{canvas: canvas} = state) do
