@@ -24,6 +24,9 @@ gl_color_buffer_bit() ->
 gl_depth_buffer_bit() ->
   ?GL_DEPTH_BUFFER_BIT.
 
+gl_points() ->
+  ?GL_POINTS.
+
 gl_triangles() ->
   ?GL_TRIANGLES.
 

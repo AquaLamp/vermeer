@@ -143,9 +143,32 @@ defmodule Vermeer do
     :gl.loadIdentity()
     :gl.translatef(x*8, y*-8, -10.0)
     #:gl.rotatef(state.count ,0.0, 0.0, 1.0)
-    circle(1.5,12,{0.3,0.3,1.0})
+#    circle(1.5,12,{0.3,0.3,1.0})
 #    quad(2,1,{1.0,0.3,0.3})
+    points([{0,0,0},{-1,0,0},{1,0,0}],5)
     :ok
+  end
+
+  defp circle(radius,resolution,{r,g,b}) do
+    deg_to_rad = :math.pi() / 180
+    :gl.'begin'(:gl_const.gl_polygon)
+    :gl.color3f(r, g, b)
+    Enum.map(0..(resolution + 1),
+      fn x -> :gl.vertex3f(
+                :math.cos((x * (360 / resolution ) * deg_to_rad)) * radius,
+                :math.sin((x * (360 / resolution ) * deg_to_rad)) * radius,
+                0.0)
+      end)
+    :gl.'end'()
+  end
+
+  defp points(positions,size) do
+    :gl.pointSize(size)
+    :gl.'begin'(:gl_const.gl_points)
+    Enum.map(positions,
+      fn {x,y,z} -> :gl.vertex3f(x,y,z)
+      end)
+    :gl.'end'()
   end
 
   defp circle(radius,resolution,{r,g,b}) do
