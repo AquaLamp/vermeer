@@ -5,6 +5,8 @@ defmodule Vermeer do
   @title 'Elixir OpenGL'
   @size {600, 600}
 
+  @count 1
+
   #######
   # API #
   #######
@@ -36,9 +38,18 @@ defmodule Vermeer do
     setup_gl(canvas)
 
     # Periodically send a message to trigger a redraw of the scene
-    timer = :timer.send_interval(20, self(), :update)
+    timer = :timer.send_interval(1, self(), :update)
 
-    {frame, %{canvas: canvas, timer: timer}}
+
+
+    {frame,
+      %{canvas: canvas,
+      timer: timer,
+      count: 0,
+      window: :wxWindow.getScreenPosition(frame),
+      mouse_relative_position: {0.0, 0.0}
+      }
+    }
   end
 
   def code_change(_, _, state) do
@@ -65,7 +76,23 @@ defmodule Vermeer do
 
   def handle_info(:update, state) do
     :wx.batch(fn -> render(state) end)
-    {:noreply, state}
+
+    {window_width, window_height} = :wxWindow.getClientSize(state.canvas)
+    {window_pos_x,window_pos_y} = :wxWindow.getScreenPosition(state.canvas)
+    {mouse_pos_x,mouse_pos_y} = :wx_misc.getMousePosition
+    mouse_relpos_x =  (mouse_pos_x - window_pos_x) / window_width - 0.5
+    mouse_relpos_y =  (mouse_pos_y - window_pos_y) / window_height - 0.5
+
+    new_state = Map.merge(state,
+      %{
+        count: state.count + 1,
+         window: {window_pos_x,window_pos_y},
+         mouse_position: :wxWindow.clientToScreen(state.canvas,:wx_misc.getMousePosition),
+         mouse_relative_position: {mouse_relpos_x, mouse_relpos_y}
+      })
+
+
+    {:noreply, new_state}
   end
 
   # Example input:
@@ -86,7 +113,6 @@ defmodule Vermeer do
     :timer.cancel(state.timer)
     :timer.sleep(300)
   end
-
 
   #####################
   # Private Functions #
@@ -113,21 +139,34 @@ defmodule Vermeer do
     :ok
   end
 
-  defp draw() do
+  defp draw(state) do
+    {x,y} = state.mouse_relative_position
     :gl.clear(Bitwise.bor(:gl_const.gl_color_buffer_bit, :gl_const.gl_depth_buffer_bit))
     :gl.loadIdentity()
-    :gl.translatef(-1.5, 0.0, -6.0)
+    :gl.translatef(x*8, y*-8, -10.0)
+    :gl.rotatef(state.count ,0.0, 0.0, 1.0)
     :gl.'begin'(:gl_const.gl_triangles)
     :gl.vertex3f(0.0, 1.0, 0.0)
-    :gl.vertex3f(-1.0, -1.0, 0.0)
-    :gl.vertex3f(1.0, -1.0, 0.0)
+    :gl.vertex3f(0.86602540378,-0.5, 0.0)
+    :gl.vertex3f(-0.86602540378,-0.5, 0.0)
     :gl.'end'()
     :ok
   end
 
-  defp render(%{canvas: canvas} = _state) do
-    draw()
+  defp render(%{canvas: canvas} = state) do
+    IO.inspect state
+    draw(state)
     :wxGLCanvas.swapBuffers(canvas)
     :ok
+  end
+
+  def resolve( [result | []]), do: result
+
+  def resolve( [result | array] ) do
+    IO.inspect result
+
+    [target | next_array] = array
+    next_result = result ++ Enum.map( next_array, fn x -> target <> x end)
+    resolve([next_result | next_array])
   end
 end
