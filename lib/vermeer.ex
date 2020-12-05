@@ -146,6 +146,7 @@ defmodule Vermeer do
 #    :gl.translatef(x*8, y*-8, -10.0)
 #    :gl.rotatef(state.count ,0.0, 0.0, 1.0)
     points(state.positions,3)
+    lines(state.positions,1)
 #    quad(2,1,{1.0,0.3,0.3})
 #    points([{0,0,0},{-1,0,0},{1,0,0}],5)
     :ok
@@ -167,6 +168,15 @@ defmodule Vermeer do
   defp points(positions,size) do
     :gl.pointSize(size)
     :gl.'begin'(:gl_const.gl_points)
+    Enum.map(positions,
+      fn {x,y,z} -> :gl.vertex3f(x,y,z)
+      end)
+    :gl.'end'()
+  end
+
+  defp lines(positions,size) do
+    :gl.pointSize(size)
+    :gl.'begin'(:gl_const.gl_lines)
     Enum.map(positions,
       fn {x,y,z} -> :gl.vertex3f(x,y,z)
       end)

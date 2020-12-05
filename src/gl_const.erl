@@ -27,6 +27,9 @@ gl_depth_buffer_bit() ->
 gl_points() ->
   ?GL_POINTS.
 
+gl_lines() ->
+  ?GL_LINES.
+
 gl_triangles() ->
   ?GL_TRIANGLES.
 
