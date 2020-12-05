@@ -143,10 +143,13 @@ defmodule Vermeer do
     :gl.clear(Bitwise.bor(:gl_const.gl_color_buffer_bit, :gl_const.gl_depth_buffer_bit))
     :gl.loadIdentity()
     :gl.translatef(0, 0, -2)
-#    :gl.translatef(x*8, y*-8, -10.0)
+    :gl.rotatef( state.count * 0.3, 0, 1,0)
 #    :gl.rotatef(state.count ,0.0, 0.0, 1.0)
     points(state.positions,3)
-    lines(state.positions,1)
+
+    lines_positions = cross_resolve( [[] | state.positions]) |>  Enum.map(fn x -> Tuple.to_list(x) end) |> List.flatten
+
+    lines(lines_positions,1)
 #    quad(2,1,{1.0,0.3,0.3})
 #    points([{0,0,0},{-1,0,0},{1,0,0}],5)
     :ok
@@ -221,12 +224,19 @@ defmodule Vermeer do
       } end)
   end
 
-  def resolve( [result | []]), do: result
+  def cross_resolve( [result | []]), do: Enum.reject( result, fn x -> is_nil(x)end)
 
-  def resolve( [result | array] ) do
-    IO.inspect result
-    [target | next_array] = array
-    next_result = result ++ Enum.map( next_array, fn x -> target <> x end)
-    resolve([next_result | next_array])
+  def cross_resolve( [result | array] ) do
+    [ a | next_array] = array
+    next_result = result ++ Enum.map( next_array, fn b -> if distance3d(a,b) < 0.2 , do: {a,b}, else: nil end)
+    cross_resolve([next_result | next_array])
+  end
+
+  def distance3d({x1,y1,z1},{x2,y2,z2}) do
+    length3d({x1-x2,y1-y2,z1-z2})
+  end
+
+  defp length3d({x,y,z}) do
+    :math.sqrt((:math.pow(x,2) + :math.pow(y,2) + :math.pow(z,2))) |> abs
   end
 end
