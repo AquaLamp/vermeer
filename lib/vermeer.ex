@@ -45,7 +45,8 @@ defmodule Vermeer do
       timer: timer,
       count: 0,
       window: :wxWindow.getScreenPosition(frame),
-      mouse_relative_position: {0.0, 0.0}
+      mouse_relative_position: {0.0, 0.0},
+      positions: random_position3d(100)
       }
     }
   end
@@ -141,11 +142,12 @@ defmodule Vermeer do
     {x,y} = state.mouse_relative_position
     :gl.clear(Bitwise.bor(:gl_const.gl_color_buffer_bit, :gl_const.gl_depth_buffer_bit))
     :gl.loadIdentity()
-    :gl.translatef(x*8, y*-8, -10.0)
-    #:gl.rotatef(state.count ,0.0, 0.0, 1.0)
-#    circle(1.5,12,{0.3,0.3,1.0})
+    :gl.translatef(0, 0, -2)
+#    :gl.translatef(x*8, y*-8, -10.0)
+#    :gl.rotatef(state.count ,0.0, 0.0, 1.0)
+    points(state.positions,3)
 #    quad(2,1,{1.0,0.3,0.3})
-    points([{0,0,0},{-1,0,0},{1,0,0}],5)
+#    points([{0,0,0},{-1,0,0},{1,0,0}],5)
     :ok
   end
 
@@ -201,11 +203,18 @@ defmodule Vermeer do
     :ok
   end
 
+  defp random_position3d(count) do
+    positions3d = Enum.map(0..count,fn x ->
+      {:random.uniform(1000)/1000 - 0.5,
+        :random.uniform(1000)/1000 - 0.5,
+        :random.uniform(1000)/1000 - 0.5
+      } end)
+  end
+
   def resolve( [result | []]), do: result
 
   def resolve( [result | array] ) do
     IO.inspect result
-
     [target | next_array] = array
     next_result = result ++ Enum.map( next_array, fn x -> target <> x end)
     resolve([next_result | next_array])
