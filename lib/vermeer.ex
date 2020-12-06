@@ -5,7 +5,7 @@ defmodule Vermeer do
   @title 'Elixir OpenGL'
   @size {1200, 840}
   @particle_count 250
-  @interval 30
+  @interval 1
 
   #######
   # API #
@@ -178,11 +178,14 @@ defmodule Vermeer do
     particle_positions = Enum.map(state.particles, fn particle -> particle.position end)
     Enum.map(particle_positions, fn pos -> circle(0.2, 32, pos, {0.1, 1, 1}) end)
 
-    # near_points= ConnectLines.get_edges( [[] | particle_positions]) # 再帰
+    #near_points= ConnectLines.get_edges( [[] | particle_positions]) # 再帰
     near_points = ConnectLines.get_edges_parallel(particle_positions) # 並列
 
-    lines_positions = near_points |> Enum.map(fn x -> Tuple.to_list(x) end) |> List.flatten()
-    lines(lines_positions, 1)
+    near_points
+    |> Enum.map(fn x -> Tuple.to_list(x) end)
+    |> List.flatten
+    |> lines(1)
+
     :ok
   end
 
@@ -192,7 +195,7 @@ defmodule Vermeer do
     :gl.color3f(r, g, b)
 
     Enum.map(
-      0..(resolution + 1),
+      0..(resolution),
       fn n ->
         :gl.vertex3f(
           :math.cos(n * (360 / resolution) * deg_to_rad) * radius + x,

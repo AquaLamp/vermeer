@@ -1,10 +1,12 @@
 defmodule ConnectLines do
+  @cutoff 10
+
   def get_edges([result | []]), do: Enum.reject(result, fn x -> is_nil(x) end)
 
   def get_edges([result | array]) do
     [a | next_array] = array
 
-    near_points = Enum.map(next_array, fn b -> if distance3d(a, b) < 1, do: {a, b}, else: nil end)
+    near_points = Enum.map(next_array, fn b -> if distance3d(a, b) < @cutoff, do: {a, b}, else: nil end)
     next_result = result ++ near_points
     get_edges([next_result | next_array])
   end
@@ -23,7 +25,7 @@ defmodule ConnectLines do
 
   def sort_positions(target, array) do
     Enum.map(array, fn x ->
-      if elem(x, 1) < elem(target, 1) && distance3d(elem(target, 0), elem(x, 0)) < 10,
+      if elem(x, 1) < elem(target, 1) && distance3d(elem(target, 0), elem(x, 0)) < @cutoff,
         do: {elem(target, 0), elem(x, 0)},
         else: nil
     end)
