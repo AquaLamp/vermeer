@@ -46,7 +46,7 @@ defmodule Vermeer do
       count: 0,
       window: :wxWindow.getScreenPosition(frame),
       mouse_relative_position: {0.0, 0.0},
-      particles: Enum.map(0..500, fn _ -> %Particle{position: {1,1,1}, velocity: {0,0,0}} end)
+      particles: Enum.map(0..300, fn _ -> %Particle{position: {0,0,0}, velocity: {0,0,0}} end)
       }
     }
   end
@@ -161,9 +161,8 @@ defmodule Vermeer do
     points(particle_positions,3)
     Enum.map(particle_positions,fn pos -> circle(0.05,32,pos,{1,1,1}) end)
 
-    near_points=  [[] | particle_positions]
-                  |>  Flow.from_enumerable(stages: 12)
-                  |> cross_resolve()
+    #near_points= cross_resolve( [[] | particle_positions])
+    near_points= cross_resolve_parallel(particle_positions) |> Enum.reject(fn x -> is_nil(x) end)
 
     lines_positions = near_points |>  Enum.map(fn x -> Tuple.to_list(x) end) |> List.flatten
     lines(lines_positions,1)
@@ -253,6 +252,29 @@ defmodule Vermeer do
     next_result = result ++ near_points
     cross_resolve([next_result | next_array])
   end
+
+  def cross_resolve_parallel(array) do
+    indexed_array= Enum.with_index(array)
+
+        near_points = indexed_array
+                      |>Flow.from_enumerable(stages: 18)
+                      |>Flow.map( fn n -> cross_resolve_parallel2(n,indexed_array) end)
+                      |>Enum.to_list
+                      |> Enum.reject(fn x -> is_nil(x) end)
+                      |> List.flatten
+  end
+
+  def cross_resolve_parallel2(target,array) do
+
+    #elem(x,1) < elem(target,1) &&
+    Enum.map(array , fn x ->
+      if   distance3d(elem(target,0) , elem(x,0)) < 0.6,
+                                 do: {elem(target,0),elem(x,0)},
+                                 else: nil
+    end
+    )
+  end
+
 
   def distance3d({x1,y1,z1},{x2,y2,z2}) do
     length3d({x1-x2,y1-y2,z1-z2})
