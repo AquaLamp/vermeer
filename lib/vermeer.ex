@@ -3,8 +3,9 @@ defmodule Vermeer do
   use Bitwise
 
   @title 'Elixir OpenGL'
-  @size {600, 600}
-  @count 1
+  @size {1200, 840}
+  @particle_count 250
+  @interval 30
 
   #######
   # API #
@@ -37,7 +38,7 @@ defmodule Vermeer do
     setup_gl(canvas)
 
     # Periodically send a message to trigger a redraw of the scene
-    timer = :timer.send_interval(1, self(), :update)
+    timer = :timer.send_interval(@interval, self(), :update)
 
     {frame,
       %{canvas: canvas,
@@ -46,7 +47,7 @@ defmodule Vermeer do
       count: 0,
       window: :wxWindow.getScreenPosition(frame),
       mouse_relative_position: {0.0, 0.0},
-      particles: Enum.map(0..300, fn _ -> %Particle{position: {0,0,0}, velocity: {0,0,0}} end)
+      particles: Particle.init_particles(@particle_count)
       }
     }
   end
@@ -145,7 +146,7 @@ defmodule Vermeer do
     :gl.viewport(0, 0, width, height)
     :gl.matrixMode(:gl_const.gl_projection)
     :gl.loadIdentity()
-    :glu.perspective(45.0, width / height, 0.1, 100.0)
+    :glu.perspective(45.0, width / height, 0.1, 1000.0)
     :gl.matrixMode(:gl_const.gl_modelview)
     :gl.loadIdentity()
     :ok
@@ -155,11 +156,11 @@ defmodule Vermeer do
     {x,y} = state.mouse_relative_position
     :gl.clear(Bitwise.bor(:gl_const.gl_color_buffer_bit, :gl_const.gl_depth_buffer_bit))
     :gl.loadIdentity()
-    :gl.translatef(0, 0, -15)
-#   :gl.rotatef(state.count ,0.0, 0.0, 1.0)
+    :gl.translatef(0, 0, -100)
+    :gl.rotatef(state.count * 0.3 ,0.0, 0.0, 1.0)
     particle_positions = Enum.map(state.particles,fn particle -> particle.position end )
-    points(particle_positions,3)
-    Enum.map(particle_positions,fn pos -> circle(0.05,32,pos,{1,1,1}) end)
+#   points(particle_positions,3)
+    Enum.map(particle_positions,fn pos -> circle(0.2,32,pos,{0.1,1,1}) end)
 
     #near_points= cross_resolve( [[] | particle_positions])
     near_points= cross_resolve_parallel(particle_positions)
@@ -242,7 +243,7 @@ defmodule Vermeer do
   def cross_resolve( [result | array] ) do
     [ a | next_array] = array
 
-    near_points = Enum.map( next_array, fn b -> if distance3d(a,b) < 0.6 , do: {a,b}, else: nil end)
+    near_points = Enum.map( next_array, fn b -> if distance3d(a,b) < 1 , do: {a,b}, else: nil end)
     next_result = result ++ near_points
     cross_resolve([next_result | next_array])
   end
@@ -262,7 +263,7 @@ defmodule Vermeer do
 
     #elem(x,1) < elem(target,1) &&
     Enum.map(array , fn x ->
-      if   distance3d(elem(target,0) , elem(x,0)) < 0.6,
+      if   distance3d(elem(target,0) , elem(x,0)) < 10,
                                  do: {elem(target,0),elem(x,0)},
                                  else: nil
     end
