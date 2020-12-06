@@ -14,14 +14,14 @@ defmodule Vermeer.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger,:noise]
+      extra_applications: [:logger, :noise]
     ]
   end
 
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:noise,"~> 0.0.2"},
+      {:noise, "~> 0.0.2"},
       {:flow, "~> 1.0.0"}
     ]
   end
