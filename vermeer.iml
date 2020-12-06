@@ -7,6 +7,8 @@
       <sourceFolder url="file://$MODULE_DIR$/lib" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/spec" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/test" isTestSource="true" />
+      <excludeFolder url="file://$MODULE_DIR$/_build/dev/lib/flow" />
+      <excludeFolder url="file://$MODULE_DIR$/_build/dev/lib/gen_stage" />
       <excludeFolder url="file://$MODULE_DIR$/assets/node_modules/phoenix" />
       <excludeFolder url="file://$MODULE_DIR$/assets/node_modules/phoenix_html" />
       <excludeFolder url="file://$MODULE_DIR$/cover" />
@@ -17,5 +19,8 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="simplex_noise" level="project" />
     <orderEntry type="library" name="noise" level="project" />
+    <orderEntry type="library" name="flow" level="project" />
+    <orderEntry type="library" name="gen_stage" level="project" />
+    <orderEntry type="library" name="ex_doc" level="project" />
   </component>
 </module>

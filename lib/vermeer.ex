@@ -42,10 +42,11 @@ defmodule Vermeer do
     {frame,
       %{canvas: canvas,
       timer: timer,
+      uptime: :os.system_time(:millisecond),
       count: 0,
       window: :wxWindow.getScreenPosition(frame),
       mouse_relative_position: {0.0, 0.0},
-      particles: Enum.map(0..150, fn _ -> %Particle{position: {1,1,1}, velocity: {0,0,0}} end)
+      particles: Enum.map(0..500, fn _ -> %Particle{position: {1,1,1}, velocity: {0,0,0}} end)
       }
     }
   end
@@ -81,9 +82,18 @@ defmodule Vermeer do
     mouse_relpos_x =  (mouse_pos_x - window_pos_x) / window_width - 0.5
     mouse_relpos_y =  (mouse_pos_y - window_pos_y) / window_height - 0.5
 
+    new_particles = state.particles
+                    |>Flow.from_enumerable(stages: 18)
+                    |>Flow.map(fn particle -> VectorField.affect_particle(particle) end)
+                    |>Enum.to_list
 
-    new_particles = state.particles |>Enum.map(fn particle -> VectorField.affect_particle(particle) end)
-    IO.inspect new_particles
+    # 直列化するとやや遅くなる
+    #    new_particles = state.particles
+    #    |>Enum.map(fn particle -> VectorField.affect_particle(particle) end)
+
+    exec_time =   (:os.system_time(:millisecond) - state.uptime) / 1000
+    IO.inspect state.count / exec_time
+
     new_state = Map.merge(state,
       %{
         count: state.count + 1,
@@ -151,7 +161,11 @@ defmodule Vermeer do
     points(particle_positions,3)
     Enum.map(particle_positions,fn pos -> circle(0.05,32,pos,{1,1,1}) end)
 
-    lines_positions = cross_resolve( [[] | particle_positions]) |>  Enum.map(fn x -> Tuple.to_list(x) end) |> List.flatten
+    near_points=  [[] | particle_positions]
+                  |>  Flow.from_enumerable(stages: 12)
+                  |> cross_resolve()
+
+    lines_positions = near_points |>  Enum.map(fn x -> Tuple.to_list(x) end) |> List.flatten
     lines(lines_positions,1)
     :ok
   end
@@ -211,7 +225,6 @@ defmodule Vermeer do
   end
 
   defp render(%{canvas: canvas} = state) do
-    IO.inspect state
     draw(state)
     :wxGLCanvas.swapBuffers(canvas)
     :ok
@@ -229,7 +242,15 @@ defmodule Vermeer do
 
   def cross_resolve( [result | array] ) do
     [ a | next_array] = array
-    next_result = result ++ Enum.map( next_array, fn b -> if distance3d(a,b) < 0.6 , do: {a,b}, else: nil end)
+
+    #    near_points = next_array
+    #                  |>Flow.from_enumerable(stages: 12)
+    #                  |>Flow.map(fn b -> if distance3d(a,b) < 0.6 , do: {a,b}, else: nil end)
+    #                  |>Enum.to_list
+
+    #直列のほうが早い
+    near_points = Enum.map( next_array, fn b -> if distance3d(a,b) < 0.6 , do: {a,b}, else: nil end)
+    next_result = result ++ near_points
     cross_resolve([next_result | next_array])
   end
 
