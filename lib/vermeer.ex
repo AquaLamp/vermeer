@@ -4,7 +4,6 @@ defmodule Vermeer do
 
   @title 'Elixir OpenGL'
   @size {600, 600}
-
   @count 1
 
   #######
@@ -46,7 +45,7 @@ defmodule Vermeer do
       count: 0,
       window: :wxWindow.getScreenPosition(frame),
       mouse_relative_position: {0.0, 0.0},
-      positions: random_position3d(150)
+      particles: Enum.map(0..100, fn _ -> %Particle{position: {1,1,1}, velocity: {0,0,0}} end)
       }
     }
   end
@@ -82,14 +81,13 @@ defmodule Vermeer do
     mouse_relpos_x =  (mouse_pos_x - window_pos_x) / window_width - 0.5
     mouse_relpos_y =  (mouse_pos_y - window_pos_y) / window_height - 0.5
 
-    IO.inspect state.positions
-    IO.inspect "---------------------------"
-    new_positions = state.positions |>Enum.map(fn x -> PointNetwork.add3d( PointNetwork.curl_noise(x),x) end)
-    IO.inspect new_positions
+
+    new_particles = state.particles |>Enum.map(fn particle -> VectorField.affect_particle(particle) end)
+    IO.inspect new_particles
     new_state = Map.merge(state,
       %{
         count: state.count + 1,
-        positions: new_positions,
+        particles: new_particles,
         window: {window_pos_x,window_pos_y},
         mouse_position: :wxWindow.clientToScreen(state.canvas,:wx_misc.getMousePosition),
         mouse_relative_position: {mouse_relpos_x, mouse_relpos_y}
@@ -150,10 +148,12 @@ defmodule Vermeer do
     :gl.translatef(0, 0, -8)
 #    :gl.rotatef( state.count * 0.3, 0, 1,0)
 #    :gl.rotatef(state.count ,0.0, 0.0, 1.0)
-    points(state.positions,3)
-    Enum.map(state.positions,fn x -> circle(0.03,32,x,{1,1,1}) end)
 
-    lines_positions = cross_resolve( [[] | state.positions]) |>  Enum.map(fn x -> Tuple.to_list(x) end) |> List.flatten
+    particle_positions = Enum.map(state.particles,fn particle -> particle.position end )
+    points(particle_positions,3)
+    Enum.map(particle_positions,fn x -> circle(0.03,32,x,{1,1,1}) end)
+
+    lines_positions = cross_resolve( [[] | particle_positions]) |>  Enum.map(fn x -> Tuple.to_list(x) end) |> List.flatten
     lines(lines_positions,1)
 #    quad(2,1,{1.0,0.3,0.3})
 #    points([{0,0,0},{-1,0,0},{1,0,0}],5)

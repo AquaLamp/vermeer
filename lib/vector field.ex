@@ -1,4 +1,14 @@
-defmodule PointNetwork do
+defmodule VectorField do
+
+  def affect_particle(particle) do
+
+    field_vel = curl_noise(particle.position)
+
+    new_velocity =  add3d(particle.velocity, field_vel)
+    new_position  =   add3d(particle.position, new_velocity)
+
+    %Particle{position: new_position , velocity: new_velocity }
+  end
 
   def  curl_noise({x,y,z} = pos) do
     e = 0.0009765625
