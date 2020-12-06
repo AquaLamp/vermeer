@@ -159,11 +159,10 @@ defmodule Vermeer do
     :gl.translatef(0, 0, -100)
     :gl.rotatef(state.count * 0.3 ,0.0, 0.0, 1.0)
     particle_positions = Enum.map(state.particles,fn particle -> particle.position end )
-#   points(particle_positions,3)
-    Enum.map(particle_positions,fn pos -> circle(0.2,32,pos,{0.1,1,1}) end)
+   Enum.map(particle_positions,fn pos -> circle(0.2,32,pos,{0.1,1,1}) end)
 
-    #near_points= cross_resolve( [[] | particle_positions])
-    near_points= cross_resolve_parallel(particle_positions)
+    #near_points= ConnectLines.get_edges( [[] | particle_positions]) # 再帰
+    near_points= ConnectLines.get_edges_parallel(particle_positions) # 並列
 
     lines_positions = near_points |>  Enum.map(fn x -> Tuple.to_list(x) end) |> List.flatten
     lines(lines_positions,1)
@@ -228,54 +227,5 @@ defmodule Vermeer do
     draw(state)
     :wxGLCanvas.swapBuffers(canvas)
     :ok
-  end
-
-  defp random_position3d(count) do
-    positions3d = Enum.map(0..count,fn x ->
-      {:random.uniform(1000)/1000 - 0.5,
-        :random.uniform(1000)/1000 - 0.5,
-        :random.uniform(1000)/1000 - 0.5
-      } end)
-  end
-
-  def cross_resolve( [result | []]), do: Enum.reject( result, fn x -> is_nil(x)end)
-
-  def cross_resolve( [result | array] ) do
-    [ a | next_array] = array
-
-    near_points = Enum.map( next_array, fn b -> if distance3d(a,b) < 1 , do: {a,b}, else: nil end)
-    next_result = result ++ near_points
-    cross_resolve([next_result | next_array])
-  end
-
-  def cross_resolve_parallel(array) do
-    indexed_array= Enum.with_index(array)
-
-        near_points = indexed_array
-                      |>Flow.from_enumerable(stages: 18)
-                      |>Flow.map( fn n -> cross_resolve_parallel2(n,indexed_array) end)
-                      |>Enum.to_list
-                      |>List.flatten
-                      |>Enum.reject(fn x -> is_nil(x) end)
-  end
-
-  def cross_resolve_parallel2(target,array) do
-
-    #elem(x,1) < elem(target,1) &&
-    Enum.map(array , fn x ->
-      if   distance3d(elem(target,0) , elem(x,0)) < 10,
-                                 do: {elem(target,0),elem(x,0)},
-                                 else: nil
-    end
-    )
-  end
-
-
-  def distance3d({x1,y1,z1},{x2,y2,z2}) do
-    length3d({x1-x2,y1-y2,z1-z2})
-  end
-
-  defp length3d({x,y,z}) do
-    :math.sqrt((:math.pow(x,2) + :math.pow(y,2) + :math.pow(z,2))) |> abs
   end
 end
