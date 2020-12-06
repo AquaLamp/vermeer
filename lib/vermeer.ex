@@ -162,7 +162,7 @@ defmodule Vermeer do
     Enum.map(particle_positions,fn pos -> circle(0.05,32,pos,{1,1,1}) end)
 
     #near_points= cross_resolve( [[] | particle_positions])
-    near_points= cross_resolve_parallel(particle_positions) |> Enum.reject(fn x -> is_nil(x) end)
+    near_points= cross_resolve_parallel(particle_positions)
 
     lines_positions = near_points |>  Enum.map(fn x -> Tuple.to_list(x) end) |> List.flatten
     lines(lines_positions,1)
@@ -242,12 +242,6 @@ defmodule Vermeer do
   def cross_resolve( [result | array] ) do
     [ a | next_array] = array
 
-    #    near_points = next_array
-    #                  |>Flow.from_enumerable(stages: 12)
-    #                  |>Flow.map(fn b -> if distance3d(a,b) < 0.6 , do: {a,b}, else: nil end)
-    #                  |>Enum.to_list
-
-    #直列のほうが早い
     near_points = Enum.map( next_array, fn b -> if distance3d(a,b) < 0.6 , do: {a,b}, else: nil end)
     next_result = result ++ near_points
     cross_resolve([next_result | next_array])
@@ -260,8 +254,8 @@ defmodule Vermeer do
                       |>Flow.from_enumerable(stages: 18)
                       |>Flow.map( fn n -> cross_resolve_parallel2(n,indexed_array) end)
                       |>Enum.to_list
-                      |> Enum.reject(fn x -> is_nil(x) end)
-                      |> List.flatten
+                      |>List.flatten
+                      |>Enum.reject(fn x -> is_nil(x) end)
   end
 
   def cross_resolve_parallel2(target,array) do
