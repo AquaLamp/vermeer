@@ -29,7 +29,7 @@ defmodule VectorField do
     result_y = elem(p_z1,0) - elem(p_z0,0) - elem(p_x1,2) + elem(p_x0,2)
     result_z = elem(p_x1,1) - elem(p_x0,1) - elem(p_y1,0) + elem(p_y0,0)
 
-    multiply3d(normalize3d( {result_x/e2 , result_y/e2 , result_z/e2 } ), {0.1,0.1,0.1})
+    multiply3d(normalize3d( {result_x/e2 , result_y/e2 , result_z/e2 } ), {0.005,0.005,0.005})
   end
 
   defp simplex_noise3d({x,y,z} = pos) do

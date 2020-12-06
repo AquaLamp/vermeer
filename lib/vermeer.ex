@@ -45,7 +45,7 @@ defmodule Vermeer do
       count: 0,
       window: :wxWindow.getScreenPosition(frame),
       mouse_relative_position: {0.0, 0.0},
-      particles: Enum.map(0..100, fn _ -> %Particle{position: {1,1,1}, velocity: {0,0,0}} end)
+      particles: Enum.map(0..150, fn _ -> %Particle{position: {1,1,1}, velocity: {0,0,0}} end)
       }
     }
   end
@@ -145,18 +145,14 @@ defmodule Vermeer do
     {x,y} = state.mouse_relative_position
     :gl.clear(Bitwise.bor(:gl_const.gl_color_buffer_bit, :gl_const.gl_depth_buffer_bit))
     :gl.loadIdentity()
-    :gl.translatef(0, 0, -8)
-#    :gl.rotatef( state.count * 0.3, 0, 1,0)
-#    :gl.rotatef(state.count ,0.0, 0.0, 1.0)
-
+    :gl.translatef(0, 0, -15)
+#   :gl.rotatef(state.count ,0.0, 0.0, 1.0)
     particle_positions = Enum.map(state.particles,fn particle -> particle.position end )
     points(particle_positions,3)
-    Enum.map(particle_positions,fn x -> circle(0.03,32,x,{1,1,1}) end)
+    Enum.map(particle_positions,fn pos -> circle(0.05,32,pos,{1,1,1}) end)
 
     lines_positions = cross_resolve( [[] | particle_positions]) |>  Enum.map(fn x -> Tuple.to_list(x) end) |> List.flatten
     lines(lines_positions,1)
-#    quad(2,1,{1.0,0.3,0.3})
-#    points([{0,0,0},{-1,0,0},{1,0,0}],5)
     :ok
   end
 
@@ -166,8 +162,8 @@ defmodule Vermeer do
     :gl.color3f(r, g, b)
     Enum.map(0..(resolution + 1),
       fn n -> :gl.vertex3f(
-                :math.cos((n * (360 / resolution ) * deg_to_rad)) * radius - x,
-                :math.sin((n * (360 / resolution ) * deg_to_rad)) * radius - y,
+                :math.cos((n * (360 / resolution ) * deg_to_rad)) * radius + x,
+                :math.sin((n * (360 / resolution ) * deg_to_rad)) * radius + y,
                 z)
       end)
     :gl.'end'()
@@ -233,7 +229,7 @@ defmodule Vermeer do
 
   def cross_resolve( [result | array] ) do
     [ a | next_array] = array
-    next_result = result ++ Enum.map( next_array, fn b -> if distance3d(a,b) < 0.2 , do: {a,b}, else: nil end)
+    next_result = result ++ Enum.map( next_array, fn b -> if distance3d(a,b) < 0.6 , do: {a,b}, else: nil end)
     cross_resolve([next_result | next_array])
   end
 
