@@ -46,7 +46,7 @@ defmodule Vermeer do
       count: 0,
       window: :wxWindow.getScreenPosition(frame),
       mouse_relative_position: {0.0, 0.0},
-      positions: random_position3d(100)
+      positions: random_position3d(150)
       }
     }
   end
@@ -82,12 +82,17 @@ defmodule Vermeer do
     mouse_relpos_x =  (mouse_pos_x - window_pos_x) / window_width - 0.5
     mouse_relpos_y =  (mouse_pos_y - window_pos_y) / window_height - 0.5
 
+    IO.inspect state.positions
+    IO.inspect "---------------------------"
+    new_positions = state.positions |>Enum.map(fn x -> PointNetwork.add3d( PointNetwork.curl_noise(x),x) end)
+    IO.inspect new_positions
     new_state = Map.merge(state,
       %{
         count: state.count + 1,
-         window: {window_pos_x,window_pos_y},
-         mouse_position: :wxWindow.clientToScreen(state.canvas,:wx_misc.getMousePosition),
-         mouse_relative_position: {mouse_relpos_x, mouse_relpos_y}
+        positions: new_positions,
+        window: {window_pos_x,window_pos_y},
+        mouse_position: :wxWindow.clientToScreen(state.canvas,:wx_misc.getMousePosition),
+        mouse_relative_position: {mouse_relpos_x, mouse_relpos_y}
       })
 
 
@@ -142,28 +147,28 @@ defmodule Vermeer do
     {x,y} = state.mouse_relative_position
     :gl.clear(Bitwise.bor(:gl_const.gl_color_buffer_bit, :gl_const.gl_depth_buffer_bit))
     :gl.loadIdentity()
-    :gl.translatef(0, 0, -2)
-    :gl.rotatef( state.count * 0.3, 0, 1,0)
+    :gl.translatef(0, 0, -8)
+#    :gl.rotatef( state.count * 0.3, 0, 1,0)
 #    :gl.rotatef(state.count ,0.0, 0.0, 1.0)
     points(state.positions,3)
+    Enum.map(state.positions,fn x -> circle(0.03,32,x,{1,1,1}) end)
 
     lines_positions = cross_resolve( [[] | state.positions]) |>  Enum.map(fn x -> Tuple.to_list(x) end) |> List.flatten
-
     lines(lines_positions,1)
 #    quad(2,1,{1.0,0.3,0.3})
 #    points([{0,0,0},{-1,0,0},{1,0,0}],5)
     :ok
   end
 
-  defp circle(radius,resolution,{r,g,b}) do
+  defp circle(radius,resolution,{x,y,z},{r,g,b}) do
     deg_to_rad = :math.pi() / 180
     :gl.'begin'(:gl_const.gl_polygon)
     :gl.color3f(r, g, b)
     Enum.map(0..(resolution + 1),
-      fn x -> :gl.vertex3f(
-                :math.cos((x * (360 / resolution ) * deg_to_rad)) * radius,
-                :math.sin((x * (360 / resolution ) * deg_to_rad)) * radius,
-                0.0)
+      fn n -> :gl.vertex3f(
+                :math.cos((n * (360 / resolution ) * deg_to_rad)) * radius - x,
+                :math.sin((n * (360 / resolution ) * deg_to_rad)) * radius - y,
+                z)
       end)
     :gl.'end'()
   end
