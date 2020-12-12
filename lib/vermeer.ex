@@ -103,8 +103,8 @@ defmodule Vermeer do
       |> Enum.to_list()
 
     # 直列
-    #    new_particles = state.particles
-    #    |>Enum.map(fn particle -> VectorField.affect_particle(particle) end)
+    # new_particles = state.particles
+    # |>Enum.map(fn particle -> VectorField.affect_particle(particle) end)
 
     exec_time = (:os.system_time(:millisecond) - state.uptime) / 1000
     IO.inspect(state.count / exec_time)
@@ -176,7 +176,7 @@ defmodule Vermeer do
     :gl.translatef(0, 0, -100)
     :gl.rotatef(state.count * 0.3, 0.0, 0.0, 1.0)
     particle_positions = Enum.map(state.particles, fn particle -> particle.position end)
-    Enum.map(particle_positions, fn pos -> circle(0.2, 32, pos, {0.1, 1, 1}) end)
+    Enum.map(particle_positions, fn pos -> circle(0.5, 32, pos, {0.1, 1, 1}) end)
 
     #near_points= ConnectLines.get_edges( [[] | particle_positions]) # 再帰
     near_points = ConnectLines.get_edges_parallel(particle_positions) # 並列

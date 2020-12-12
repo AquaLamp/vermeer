@@ -1,21 +1,13 @@
 # Vermeer
+Play the Elixir and OpenGL.
+inspired by https://wtfleming.github.io/2016/01/06/getting-started-opengl-elixir/
 
-**TODO: Add description**
-
-## Installation
-
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `vermeer` to your list of dependencies in `mix.exs`:
-
+## deps
 ```elixir
-def deps do
-  [
-    {:vermeer, "~> 0.1.0"}
-  ]
-end
+  defp deps do
+    [
+      {:noise, "~> 0.0.2"},
+      {:flow, "~> 1.0.0"}
+    ]
+  end
 ```
-
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/vermeer](https://hexdocs.pm/vermeer).
-
